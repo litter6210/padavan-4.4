@@ -2,7 +2,7 @@ name: CI
 
 # Controls when the action will run. 
 on: 
-  push:
+  #push:
   pull_request:
   workflow_dispatch:
   release:
@@ -43,7 +43,7 @@ jobs:
           if [ $? = 0 ]; then cp -f images/*.trx ${images_dir}/$m.trx; else exit 1; fi; \
           ./clear_tree_simple >/dev/null 2>&1; done
       - name: Create archive
-        if: ${{ github.event_name != 'release' && success() }}
+        if: ${{ success() }}
         run: |
           ls -lh ${images_dir}
           GIT_VERSION=`git rev-parse --short=7 HEAD 2>/dev/null` && [ -n "$GIT_VERSION" ] && \
@@ -56,12 +56,3 @@ jobs:
         with:
           name: ${{ env.image_name }}
           path: ${{ env.images_dir }}/*.7z
-      - name: Upload images to Releases
-        if: ${{ github.event_name == 'release' && success() }}
-        uses: svenstaro/upload-release-action@2.2.0
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ env.images_dir }}/*.trx
-          tag: ${{ github.ref }}
-          overwrite: true
-          file_glob: true
